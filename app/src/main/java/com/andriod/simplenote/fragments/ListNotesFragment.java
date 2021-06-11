@@ -1,8 +1,10 @@
 package com.andriod.simplenote.fragments;
 
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.os.Bundle;
+import android.os.Parcelable;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -16,15 +18,21 @@ import androidx.fragment.app.Fragment;
 
 import com.andriod.simplenote.R;
 import com.andriod.simplenote.entity.Note;
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 
+import java.lang.reflect.Type;
 import java.util.HashSet;
 import java.util.Set;
 
 public class ListNotesFragment extends Fragment {
 
     private static final String TAG = "@@@ListNotesFragment@";
+    private static final String SHARED_PREFERENCES_NOTES = "SHARED_PREFERENCES_NOTES";
+    private static final String LIST_NOTES_KEY = "LIST_NOTES_KEY";
     private LinearLayout container;
     private final Set<Note> notes = new HashSet<>();
+    private final Gson gson = new Gson();
 
     @Nullable
     @Override
@@ -54,6 +62,13 @@ public class ListNotesFragment extends Fragment {
         if (!(context instanceof Controller)) {
             throw new IllegalStateException("Activity must implement Controller");
         }
+
+        SharedPreferences sharedPreferences = context.getSharedPreferences(SHARED_PREFERENCES_NOTES, Context.MODE_PRIVATE);
+        String stringData = sharedPreferences.getString(LIST_NOTES_KEY, null);
+        if (stringData != null && !stringData.isEmpty()) {
+            Type setType = new TypeToken<HashSet<Note>>(){}.getType();
+            notes.addAll(gson.fromJson(stringData, setType));
+        }
     }
 
     private Controller getController() {
@@ -80,7 +95,7 @@ public class ListNotesFragment extends Fragment {
             container.addView(itemView);
 
             itemView.setOnClickListener(v -> {
-                if(getController()!=null)
+                if (getController() != null)
                     getController().changeNote(note);
             });
         }
@@ -89,5 +104,17 @@ public class ListNotesFragment extends Fragment {
     public void addNote(Note note) {
         notes.add(note);
         showList();
+    }
+
+    @Override
+    public void onStop() {
+        super.onStop();
+        if (getActivity() != null) {
+            SharedPreferences sharedPreferences = getActivity().getSharedPreferences(SHARED_PREFERENCES_NOTES, Context.MODE_PRIVATE);
+            sharedPreferences
+                    .edit()
+                    .putString(LIST_NOTES_KEY, gson.toJson(notes))
+                    .apply();
+        }
     }
 }
