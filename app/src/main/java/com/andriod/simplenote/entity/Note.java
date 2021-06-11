@@ -1,16 +1,16 @@
 package com.andriod.simplenote.entity;
 
+import android.os.Parcel;
+import android.os.Parcelable;
+
 import java.util.Calendar;
 import java.util.UUID;
 
-public class Note {
+public class Note implements Parcelable {
 
     private final String id;
     private String header;
     private long date;
-
-
-    private boolean favorite;
 
     public Note(){
         this(null, getCurrentDate());
@@ -22,8 +22,42 @@ public class Note {
         this.date = date;
     }
 
+    protected Note(Parcel in) {
+        id = in.readString();
+        header = in.readString();
+        date = in.readLong();
+    }
+
+    @Override
+    public void writeToParcel(Parcel dest, int flags) {
+        dest.writeString(id);
+        dest.writeString(header);
+        dest.writeLong(date);
+    }
+
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    public static final Creator<Note> CREATOR = new Creator<Note>() {
+        @Override
+        public Note createFromParcel(Parcel in) {
+            return new Note(in);
+        }
+
+        @Override
+        public Note[] newArray(int size) {
+            return new Note[size];
+        }
+    };
+
     private static long getCurrentDate() {
         return Calendar.getInstance().getTimeInMillis();
+    }
+
+    public String getId() {
+        return id;
     }
 
     public String getHeader() {
