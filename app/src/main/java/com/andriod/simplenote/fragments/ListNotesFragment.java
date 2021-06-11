@@ -29,9 +29,12 @@ public class ListNotesFragment extends Fragment {
     private static final String TAG = "@@@ListNotesFragment@";
     private static final String SHARED_PREFERENCES_NOTES = "SHARED_PREFERENCES_NOTES";
     private static final String LIST_NOTES_KEY = "LIST_NOTES_KEY";
+    public static final String SHOW_FAVORITES_KEY = "SHOW_FAVORITES_KEY";
     private LinearLayout container;
     private final Set<Note> notes = new HashSet<>();
     private final Gson gson = new Gson();
+
+    private boolean showOnlyFavorites;
 
     @Nullable
     @Override
@@ -65,8 +68,14 @@ public class ListNotesFragment extends Fragment {
         SharedPreferences sharedPreferences = context.getSharedPreferences(SHARED_PREFERENCES_NOTES, Context.MODE_PRIVATE);
         String stringData = sharedPreferences.getString(LIST_NOTES_KEY, null);
         if (stringData != null && !stringData.isEmpty()) {
-            Type setType = new TypeToken<HashSet<Note>>(){}.getType();
+            Type setType = new TypeToken<HashSet<Note>>() {
+            }.getType();
             notes.addAll(gson.fromJson(stringData, setType));
+        }
+
+        Bundle bundle = getArguments();
+        if (bundle != null) {
+            showOnlyFavorites = bundle.getBoolean(SHOW_FAVORITES_KEY);
         }
     }
 
@@ -86,6 +95,8 @@ public class ListNotesFragment extends Fragment {
         params.setMargins(10, 10, 10, 10);
 
         for (Note note : notes) {
+            if (showOnlyFavorites && !note.isFavorite()) continue;
+
             TextView itemView = new TextView(getContext());
             itemView.setText(note.getHeader());
             itemView.setLayoutParams(params);
