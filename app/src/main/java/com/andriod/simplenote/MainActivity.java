@@ -1,6 +1,7 @@
 package com.andriod.simplenote;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.fragment.app.FragmentTransaction;
 
 import android.os.Bundle;
 
@@ -15,10 +16,14 @@ public class MainActivity extends AppCompatActivity
     private static final String FRAGMENT_LIST_NOTES = "FRAGMENT_LIST_NOTES";
     private static final String FRAGMENT_NOTE = "FRAGMENT_NOTE";
 
+    private boolean hasSecondContainer;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        hasSecondContainer = findViewById(R.id.second_fragment_container) != null;
 
         showList();
     }
@@ -31,11 +36,11 @@ public class MainActivity extends AppCompatActivity
     }
 
     private void showNote(Note note) {
-        getSupportFragmentManager()
-                .beginTransaction()
-                .add(R.id.main_fragment_container, NoteFragment.newInstance(note), FRAGMENT_NOTE)
-                .addToBackStack(FRAGMENT_LIST_NOTES)
-                .commit();
+        final FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
+
+        fragmentTransaction.add(hasSecondContainer ? R.id.second_fragment_container : R.id.main_fragment_container, NoteFragment.newInstance(note), FRAGMENT_NOTE);
+        if (!hasSecondContainer) fragmentTransaction.addToBackStack(FRAGMENT_LIST_NOTES);
+        fragmentTransaction.commit();
     }
 
     @Override
