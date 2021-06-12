@@ -5,6 +5,7 @@ import androidx.fragment.app.FragmentTransaction;
 
 import android.os.Bundle;
 import android.util.Log;
+import android.view.MenuItem;
 
 import com.andriod.simplenote.entity.Note;
 import com.andriod.simplenote.fragments.ListNotesFragment;
@@ -23,6 +24,7 @@ public class MainActivity extends AppCompatActivity
     private static final String TAG = "@@@MainActivity@";
 
     private boolean hasSecondContainer;
+    private BottomNavigationView bottomNavigationView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -30,7 +32,7 @@ public class MainActivity extends AppCompatActivity
         setContentView(R.layout.activity_main);
 
         hasSecondContainer = findViewById(R.id.second_fragment_container) != null;
-        BottomNavigationView bottomNavigationView = findViewById(R.id.bottom_view);
+        bottomNavigationView = findViewById(R.id.bottom_view);
 
         bottomNavigationView.setOnNavigationItemSelectedListener(item -> {
             int itemId = item.getItemId();
@@ -108,5 +110,13 @@ public class MainActivity extends AppCompatActivity
     @Override
     public void deleteAll() {
         showList(false).deleteAll();
+        setBottomView(R.id.menu_bottom_item_list);
+    }
+
+    private void setBottomView(int bottom_item_id) {
+        if (bottomNavigationView != null) {
+            MenuItem item = bottomNavigationView.getMenu().findItem(bottom_item_id);
+            if (item != null) item.setChecked(true);
+        }
     }
 }
