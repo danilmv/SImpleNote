@@ -2,38 +2,42 @@ package com.andriod.simplenote.fragments;
 
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.graphics.Color;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.LinearLayout;
-import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.andriod.simplenote.R;
+import com.andriod.simplenote.adapter.ListNotesAdapter;
 import com.andriod.simplenote.entity.Note;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 
 import java.lang.reflect.Type;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 public class ListNotesFragment extends Fragment {
 
     private static final String TAG = "@@@ListNotesFragment@";
     private static final String SHARED_PREFERENCES_NOTES = "SHARED_PREFERENCES_NOTES";
     private static final String LIST_NOTES_KEY = "LIST_NOTES_KEY";
-    private LinearLayout container;
     private final Set<Note> notes = new HashSet<>();
     private final Gson gson = new Gson();
 
     private boolean showOnlyFavorites;
+
+    private ListNotesAdapter adapter;
 
     @Nullable
     @Override
@@ -47,7 +51,17 @@ public class ListNotesFragment extends Fragment {
         Log.d(TAG, String.format("onViewCreated() called with: notes.size = [%d]", notes.size()));
 
         super.onViewCreated(view, savedInstanceState);
-        container = view.findViewById(R.id.list_container);
+
+        RecyclerView recyclerView = view.findViewById(R.id.recycler_view);
+        recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
+
+        adapter = new ListNotesAdapter();
+        adapter.setOnItemClickListener(note -> {
+            if (getController() != null) {
+                getController().changeNote(note);
+            }
+        });
+        recyclerView.setAdapter(adapter);
 
         view.findViewById(R.id.button_add_note).setOnClickListener(v -> {
             if (getController() != null) {
@@ -90,28 +104,17 @@ public class ListNotesFragment extends Fragment {
 
     private void showList() {
         Log.d(TAG, String.format("showList() called for note.size = [%d]", notes.size()));
+        if (adapter == null) return;
 
-        if (container == null) return;
-
-        container.removeAllViews();
-        LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
-        params.setMargins(10, 10, 10, 10);
-
-        for (Note note : notes) {
-            if (showOnlyFavorites && !note.isFavorite()) continue;
-
-            TextView itemView = new TextView(getContext());
-            itemView.setText(note.getHeader());
-            itemView.setLayoutParams(params);
-            itemView.setTextColor(Color.WHITE);
-            itemView.setBackgroundColor(Color.BLUE);
-            container.addView(itemView);
-
-            itemView.setOnClickListener(v -> {
-                if (getController() != null)
-                    getController().changeNote(note);
-            });
+        List<Note> list;
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.N) {
+            list = notes.stream()
+                    .filter(note -> !showOnlyFavorites || note.isFavorite())
+                    .collect(Collectors.toList());
+        } else {
+            list = new ArrayList<>(notes);
         }
+        adapter.setData(list);
     }
 
     public void addNote(Note note) {
