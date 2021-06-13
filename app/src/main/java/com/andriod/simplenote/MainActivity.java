@@ -1,11 +1,11 @@
 package com.andriod.simplenote;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.FragmentTransaction;
 
 import android.os.Bundle;
 import android.util.Log;
-import android.view.Menu;
 import android.view.MenuItem;
 
 import com.andriod.simplenote.entity.Note;
@@ -55,12 +55,6 @@ public class MainActivity extends AppCompatActivity
 
         showList(false);
         setBottomView(R.id.menu_bottom_item_list);
-    }
-
-    @Override
-    protected void onRestart() {
-        super.onRestart();
-        bottomNavigationView.setSelectedItemId(R.id.menu_bottom_item_list);
     }
 
     private ListNotesFragment showList() {
@@ -127,13 +121,26 @@ public class MainActivity extends AppCompatActivity
         if (bottomNavigationView != null) {
             MenuItem item = bottomNavigationView.getMenu().findItem(bottom_item_id);
             if (item != null) item.setChecked(true);
-//            bottomNavigationView.findViewById(bottom_item_id).performClick();
-//            Menu menu = bottomNavigationView.getMenu();
-//            for (int i = 0, size = menu.size(); i < size; i++) {
-//                MenuItem item = menu.getItem(i);
-//                item.setChecked(item.getItemId() == bottom_item_id);
-//            }
-            bottomNavigationView.setSelectedItemId(bottom_item_id);
         }
+    }
+
+    @Override
+    protected void onRestoreInstanceState(@NonNull Bundle savedInstanceState) {
+        Log.d(TAG, "onRestoreInstanceState() called with: savedInstanceState = [" + savedInstanceState + "]");
+        super.onRestoreInstanceState(savedInstanceState);
+    }
+
+    @Override
+    protected void onRestart() {
+        Log.d(TAG, "onRestart() called");
+        super.onRestart();
+    }
+
+    @Override
+    protected void onResume() {
+        Log.d(TAG, "onResume() called");
+        super.onResume();
+
+        setBottomView(R.id.menu_bottom_item_list);
     }
 }
