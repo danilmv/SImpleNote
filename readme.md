@@ -13,5 +13,5 @@
 
 ## Lesson8: RecyclerView
 ### Preview
-<img src="printscreens/lesson_8.png" width="32%">
+<img src="printscreens/lesson8.png" width="32%">
 
