@@ -5,6 +5,7 @@ import androidx.fragment.app.FragmentTransaction;
 
 import android.os.Bundle;
 import android.util.Log;
+import android.view.Menu;
 import android.view.MenuItem;
 
 import com.andriod.simplenote.entity.Note;
@@ -28,6 +29,7 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        Log.d(TAG, "onCreate() called with: savedInstanceState = [" + savedInstanceState + "]");
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
@@ -52,6 +54,13 @@ public class MainActivity extends AppCompatActivity
         });
 
         showList(false);
+        setBottomView(R.id.menu_bottom_item_list);
+    }
+
+    @Override
+    protected void onRestart() {
+        super.onRestart();
+        bottomNavigationView.setSelectedItemId(R.id.menu_bottom_item_list);
     }
 
     private ListNotesFragment showList() {
@@ -114,9 +123,17 @@ public class MainActivity extends AppCompatActivity
     }
 
     private void setBottomView(int bottom_item_id) {
+        Log.d(TAG, "setBottomView() called with: bottom_item_id = [" + bottom_item_id + "]");
         if (bottomNavigationView != null) {
             MenuItem item = bottomNavigationView.getMenu().findItem(bottom_item_id);
             if (item != null) item.setChecked(true);
+//            bottomNavigationView.findViewById(bottom_item_id).performClick();
+//            Menu menu = bottomNavigationView.getMenu();
+//            for (int i = 0, size = menu.size(); i < size; i++) {
+//                MenuItem item = menu.getItem(i);
+//                item.setChecked(item.getItemId() == bottom_item_id);
+//            }
+            bottomNavigationView.setSelectedItemId(bottom_item_id);
         }
     }
 }
