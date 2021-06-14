@@ -6,4 +6,6 @@
     <string name="list">list</string>
     <string name="favorites">favorites</string>
     <string name="settings">settings</string>
+    <string name="content">content:</string>
+    <string name="type">type:</string>
 </resources>

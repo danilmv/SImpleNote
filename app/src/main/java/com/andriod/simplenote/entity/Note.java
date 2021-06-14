@@ -13,11 +13,19 @@ public class Note implements Parcelable {
     private long date;
     private boolean favorite;
 
+    public enum NoteType{
+        Text, HTTP, Video
+    }
+    private NoteType type;
+
+    private String content;
+
     public Note() {
-        this(null, getCurrentDate());
+        this(NoteType.Text, null, getCurrentDate());
     }
 
-    public Note(String header, long date) {
+    public Note(NoteType type, String header, long date) {
+        this.type = type;
         this.id = UUID.randomUUID().toString();
         this.header = header;
         this.date = date;
@@ -28,6 +36,8 @@ public class Note implements Parcelable {
         header = in.readString();
         date = in.readLong();
         favorite = in.readByte() == 1;
+        content = in.readString();
+        type = NoteType.valueOf(in.readString());
     }
 
     @Override
@@ -36,6 +46,8 @@ public class Note implements Parcelable {
         dest.writeString(header);
         dest.writeLong(date);
         dest.writeByte((byte) (favorite ? 1 : 0));
+        dest.writeString(content);
+        dest.writeString(type.name());
     }
 
     @Override
@@ -85,5 +97,21 @@ public class Note implements Parcelable {
 
     public void setFavorite(boolean favorite) {
         this.favorite = favorite;
+    }
+
+    public NoteType getType() {
+        return type;
+    }
+
+    public void setType(NoteType type) {
+        this.type = type;
+    }
+
+    public String getContent() {
+        return content;
+    }
+
+    public void setContent(String content) {
+        this.content = content;
     }
 }

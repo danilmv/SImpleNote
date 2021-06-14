@@ -5,7 +5,9 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ArrayAdapter;
 import android.widget.EditText;
+import android.widget.Spinner;
 import android.widget.ToggleButton;
 
 import androidx.annotation.NonNull;
@@ -15,6 +17,11 @@ import androidx.fragment.app.Fragment;
 import com.andriod.simplenote.R;
 import com.andriod.simplenote.entity.Note;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
+
 public class NoteFragment extends Fragment {
 
     private static final String NOTE_EXTRA_KEY = "NOTE_EXTRA_KEY";
@@ -22,6 +29,8 @@ public class NoteFragment extends Fragment {
     private Note note;
 
     private EditText editTextHeader;
+    private EditText editTextContent;
+    private Spinner spinner;
 
     public static NoteFragment newInstance(Note note) {
         NoteFragment instance = new NoteFragment();
@@ -55,9 +64,21 @@ public class NoteFragment extends Fragment {
             if (getController() != null) {
                 note.setHeader(editTextHeader.getText().toString());
                 note.setFavorite(toggleButtonFavorite.isChecked());
+                note.setType(Note.NoteType.valueOf(spinner.getSelectedItem().toString()));
+                note.setContent(editTextContent.getText().toString());
                 getController().noteSaved(note);
             }
         });
+
+        spinner = view.findViewById(R.id.spinner_note_type);
+        List<Note.NoteType> spinnerValues = Arrays.asList(Note.NoteType.values());
+        ArrayAdapter<Note.NoteType> adapter = new ArrayAdapter<>(getContext(), android.R.layout.simple_spinner_dropdown_item, spinnerValues);
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        spinner.setAdapter(adapter);
+        spinner.setSelection(adapter.getPosition(note.getType()));
+
+        editTextContent = view.findViewById(R.id.edit_text_content);
+        editTextContent.setText(note.getContent());
     }
 
     private Controller getController() {
