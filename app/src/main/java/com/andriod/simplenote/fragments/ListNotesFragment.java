@@ -5,8 +5,11 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.PopupMenu;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -63,13 +66,24 @@ public class ListNotesFragment extends Fragment {
         });
         recyclerView.setAdapter(adapter);
 
-        view.findViewById(R.id.button_add_note).setOnClickListener(v -> {
-            if (getController() != null) {
-                getController().changeNote(new Note());
-            }
-        });
+        view.findViewById(R.id.button_add_note).setOnClickListener(this::showPopupMenu);
 
         showList();
+    }
+
+    private void showPopupMenu(View v) {
+        if (getController() != null) {
+            PopupMenu popupMenu = new PopupMenu(getContext(), v);
+            Menu menu = popupMenu.getMenu();
+            for (Note.NoteType value : Note.NoteType.values()) {
+                MenuItem item = menu.add(value.name());
+                item.setOnMenuItemClickListener(item1 -> {
+                    getController().changeNote(new Note(value));
+                    return true;
+                });
+            }
+            popupMenu.show();
+        }
     }
 
     @Override

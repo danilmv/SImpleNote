@@ -24,6 +24,10 @@ public class Note implements Parcelable {
         this(NoteType.Text, null, getCurrentDate());
     }
 
+    public Note(NoteType type){
+        this(type, null, getCurrentDate());
+    }
+
     public Note(NoteType type, String header, long date) {
         this.type = type;
         this.id = UUID.randomUUID().toString();
