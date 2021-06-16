@@ -8,13 +8,20 @@ import java.util.UUID;
 
 public class Note implements Parcelable {
 
+    private static final int SHORT_CONTENT_LENGTH = 30;
     private final String id;
     private String header;
     private long date;
     private boolean favorite;
 
     public enum NoteType{
-        Text, HTTP, Video
+        Text(0), HTTP(1), Video(2);
+        private final int value;
+        NoteType(int value){this.value = value;}
+
+        public int getValue() {
+            return value;
+        }
     }
     private NoteType type;
 
@@ -117,5 +124,10 @@ public class Note implements Parcelable {
 
     public void setContent(String content) {
         this.content = content;
+    }
+
+    public String getShortContent(){
+        if (content==null || content.isEmpty() || content.length() <= SHORT_CONTENT_LENGTH) return content;
+        return String.format("%s...", content.substring(0, SHORT_CONTENT_LENGTH));
     }
 }

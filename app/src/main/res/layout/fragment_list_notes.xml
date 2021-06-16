@@ -14,7 +14,8 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/recycler_view"
-        android:contentDescription="@string/add_note_button"/>
+        android:contentDescription="@string/add_note_button"
+        app:fabSize="mini"/>
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recycler_view"

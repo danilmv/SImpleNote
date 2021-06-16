@@ -14,7 +14,10 @@ import com.andriod.simplenote.entity.Note;
 
 import java.util.List;
 
-public class ListNotesAdapter extends RecyclerView.Adapter<ListNotesAdapter.ViewHolder> {
+public class ListNotesAdapter extends RecyclerView.Adapter<ListNotesAdapter.BaseViewHolder> {
+    private final static int VIDEO_TYPE = Note.NoteType.Video.getValue();
+    private final static int HTTP_TYPE = Note.NoteType.HTTP.getValue();
+
     private List<Note> notes;
     private OnItemClickListener listener;
 
@@ -22,19 +25,30 @@ public class ListNotesAdapter extends RecyclerView.Adapter<ListNotesAdapter.View
         this.listener = listener;
     }
 
-    public interface OnItemClickListener{
+    public interface OnItemClickListener {
         void onClick(Note note);
     }
 
     @NonNull
     @Override
-    public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        return new ViewHolder(LayoutInflater.from(parent.getContext()).inflate(R.layout.item_note, parent, false), listener);
+    public BaseViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+        if (viewType == VIDEO_TYPE){
+            return new VideoViewHolder(parent, listener);
+        }else if(viewType == HTTP_TYPE){
+            return new HttpViewHolder(parent, listener);
+        }else {
+            return new TextViewHolder(parent, listener);
+        }
     }
 
     @Override
-    public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
+    public void onBindViewHolder(@NonNull BaseViewHolder holder, int position) {
         holder.bind(notes.get(position));
+    }
+
+    @Override
+    public int getItemViewType(int position) {
+        return notes.get(position).getType().getValue();
     }
 
     @Override
@@ -42,33 +56,58 @@ public class ListNotesAdapter extends RecyclerView.Adapter<ListNotesAdapter.View
         return notes.size();
     }
 
-    static class ViewHolder extends RecyclerView.ViewHolder {
-        private final TextView textViewHeader;
-        private final ToggleButton toggleFavorite;
-        private Note note;
+    abstract static class BaseViewHolder extends RecyclerView.ViewHolder {
+        protected Note note;
+        protected final ToggleButton toggleFavorite = itemView.findViewById(R.id.toggle_favorite);
 
-        public ViewHolder(@NonNull View itemView, OnItemClickListener listener) {
+        protected final TextView textViewHeader = itemView.findViewById(R.id.text_view_header);
+        ;
+        protected final TextView textViewContent = itemView.findViewById(R.id.text_view_content);
+
+        public BaseViewHolder(@NonNull View itemView, OnItemClickListener listener) {
             super(itemView);
 
             itemView.setOnClickListener(v -> {
-                if (listener!=null){
+                if (listener != null) {
                     listener.onClick(note);
                 }
             });
 
-            textViewHeader = itemView.findViewById(R.id.text_view_header);
-            toggleFavorite = itemView.findViewById(R.id.toggle_favorite);
             toggleFavorite.setOnCheckedChangeListener((buttonView, isChecked) -> note.setFavorite(isChecked));
         }
 
         public void bind(Note note) {
             this.note = note;
-            textViewHeader.setText(note.getHeader());
             toggleFavorite.setChecked(note.isFavorite());
+            textViewHeader.setText(note.getHeader());
+            textViewContent.setText(note.getShortContent());
+        }
+
+        ;
+    }
+
+    static class TextViewHolder extends BaseViewHolder {
+
+        public TextViewHolder(@NonNull ViewGroup parent, OnItemClickListener listener) {
+            super(LayoutInflater.from(parent.getContext()).inflate(R.layout.item_note_text, parent, false), listener);
         }
     }
 
-    public void setData(List<Note> notes){
+    static class VideoViewHolder extends BaseViewHolder {
+
+        public VideoViewHolder(@NonNull ViewGroup parent, OnItemClickListener listener) {
+            super(LayoutInflater.from(parent.getContext()).inflate(R.layout.item_note_video, parent, false), listener);
+        }
+    }
+
+    static class HttpViewHolder extends BaseViewHolder {
+
+        public HttpViewHolder(@NonNull ViewGroup parent, OnItemClickListener listener) {
+            super(LayoutInflater.from(parent.getContext()).inflate(R.layout.item_note_http, parent, false), listener);
+        }
+    }
+
+    public void setData(List<Note> notes) {
         this.notes = notes;
         notifyDataSetChanged();
     }
