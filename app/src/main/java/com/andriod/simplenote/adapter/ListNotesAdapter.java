@@ -1,5 +1,6 @@
 package com.andriod.simplenote.adapter;
 
+import android.view.ContextMenu;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -21,6 +22,8 @@ public class ListNotesAdapter extends RecyclerView.Adapter<ListNotesAdapter.Base
     private List<Note> notes;
     private OnItemClickListener listener;
 
+    private Note currentNote;
+
     public void setOnItemClickListener(OnItemClickListener listener) {
         this.listener = listener;
     }
@@ -32,11 +35,11 @@ public class ListNotesAdapter extends RecyclerView.Adapter<ListNotesAdapter.Base
     @NonNull
     @Override
     public BaseViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        if (viewType == VIDEO_TYPE){
+        if (viewType == VIDEO_TYPE) {
             return new VideoViewHolder(parent, listener);
-        }else if(viewType == HTTP_TYPE){
+        } else if (viewType == HTTP_TYPE) {
             return new HttpViewHolder(parent, listener);
-        }else {
+        } else {
             return new TextViewHolder(parent, listener);
         }
     }
@@ -56,12 +59,15 @@ public class ListNotesAdapter extends RecyclerView.Adapter<ListNotesAdapter.Base
         return notes.size();
     }
 
-    abstract static class BaseViewHolder extends RecyclerView.ViewHolder {
+    public Note getCurrentNote() {
+        return currentNote;
+    }
+
+    abstract class BaseViewHolder extends RecyclerView.ViewHolder implements View.OnCreateContextMenuListener {
         protected Note note;
         protected final ToggleButton toggleFavorite = itemView.findViewById(R.id.toggle_favorite);
 
         protected final TextView textViewHeader = itemView.findViewById(R.id.text_view_header);
-        ;
         protected final TextView textViewContent = itemView.findViewById(R.id.text_view_content);
 
         public BaseViewHolder(@NonNull View itemView, OnItemClickListener listener) {
@@ -74,6 +80,8 @@ public class ListNotesAdapter extends RecyclerView.Adapter<ListNotesAdapter.Base
             });
 
             toggleFavorite.setOnCheckedChangeListener((buttonView, isChecked) -> note.setFavorite(isChecked));
+
+            itemView.setOnCreateContextMenuListener(this);
         }
 
         public void bind(Note note) {
@@ -83,24 +91,36 @@ public class ListNotesAdapter extends RecyclerView.Adapter<ListNotesAdapter.Base
             textViewContent.setText(note.getShortContent());
         }
 
-        ;
+        @Override
+        public void onCreateContextMenu(ContextMenu menu, View v, ContextMenu.ContextMenuInfo menuInfo) {
+            menu.add(R.string.delete_menu_item);
+            currentNote = note;
+        }
     }
 
-    static class TextViewHolder extends BaseViewHolder {
+    class TextViewHolder extends BaseViewHolder {
 
         public TextViewHolder(@NonNull ViewGroup parent, OnItemClickListener listener) {
             super(LayoutInflater.from(parent.getContext()).inflate(R.layout.item_note_text, parent, false), listener);
         }
+
+        @Override
+        public void onCreateContextMenu(ContextMenu menu, View v, ContextMenu.ContextMenuInfo menuInfo) {
+            super.onCreateContextMenu(menu, v, menuInfo);
+            menu.setHeaderTitle(String.format("%s: %s",
+                    v.getContext().getResources().getString(R.string.text_note),
+                    currentNote.getHeader()));
+        }
     }
 
-    static class VideoViewHolder extends BaseViewHolder {
+    class VideoViewHolder extends BaseViewHolder {
 
         public VideoViewHolder(@NonNull ViewGroup parent, OnItemClickListener listener) {
             super(LayoutInflater.from(parent.getContext()).inflate(R.layout.item_note_video, parent, false), listener);
         }
     }
 
-    static class HttpViewHolder extends BaseViewHolder {
+    class HttpViewHolder extends BaseViewHolder {
 
         public HttpViewHolder(@NonNull ViewGroup parent, OnItemClickListener listener) {
             super(LayoutInflater.from(parent.getContext()).inflate(R.layout.item_note_http, parent, false), listener);

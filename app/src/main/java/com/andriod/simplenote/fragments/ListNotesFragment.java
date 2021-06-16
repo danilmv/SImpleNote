@@ -14,7 +14,6 @@ import android.widget.PopupMenu;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
-import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.recyclerview.widget.StaggeredGridLayoutManager;
 
@@ -167,8 +166,13 @@ public class ListNotesFragment extends Fragment {
     }
 
     @Override
-    public void onResume() {
-        Log.d(TAG, "onResume() called");
-        super.onResume();
+    public boolean onContextItemSelected(@NonNull MenuItem item) {
+        Note note = adapter.getCurrentNote();
+        if (note != null) {
+            Log.d(TAG, String.format("note [%s] was deleted", note.getHeader()));
+            notes.remove(note);
+            showList();
+        }
+        return true;
     }
 }
