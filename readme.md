@@ -15,3 +15,9 @@
 ### Preview
 <img src="printscreens/lesson8.png" width="32%">
 
+
+## Lesson9: context menus, viewType, different ViewHolders
+### Preview
+<img src="printscreens/lesson9_1.png" width="32%">
+<img src="printscreens/lesson9_2.png" width="52%">
+
