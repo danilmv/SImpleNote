@@ -82,21 +82,17 @@ public class MainActivity extends AppCompatActivity
 
     private void showNote(Note note) {
         FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
-        if (hasSecondContainer) {
-            transaction.replace(R.id.second_fragment_container, NoteFragment.newInstance(note), FRAGMENT_NOTE);
-        } else {
-            transaction.add(R.id.main_fragment_container, NoteFragment.newInstance(note), FRAGMENT_NOTE);
-        }
+        transaction.replace(
+                hasSecondContainer ? R.id.second_fragment_container : R.id.main_fragment_container,
+                NoteFragment.newInstance(note), FRAGMENT_NOTE);
         transaction.commit();
     }
 
     private void showSettings() {
         FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
-        if (hasSecondContainer) {
-            transaction.replace(R.id.second_fragment_container, new SettingsFragment(), FRAGMENT_SETTINGS);
-        } else {
-            transaction.add(R.id.main_fragment_container, new SettingsFragment(), FRAGMENT_SETTINGS);
-        }
+        transaction.replace(
+                hasSecondContainer ? R.id.second_fragment_container : R.id.main_fragment_container,
+                new SettingsFragment(), FRAGMENT_SETTINGS);
         transaction.commit();
     }
 
@@ -116,10 +112,10 @@ public class MainActivity extends AppCompatActivity
         setBottomView(R.id.menu_bottom_item_list);
     }
 
-    private void setBottomView(int bottom_item_id) {
-        Log.d(TAG, "setBottomView() called with: bottom_item_id = [" + bottom_item_id + "]");
+    private void setBottomView(int bottomItemId) {
+        Log.d(TAG, "setBottomView() called with: bottomItemId = [" + bottomItemId + "]");
         if (bottomNavigationView != null) {
-            MenuItem item = bottomNavigationView.getMenu().findItem(bottom_item_id);
+            MenuItem item = bottomNavigationView.getMenu().findItem(bottomItemId);
             if (item != null) item.setChecked(true);
         }
     }
