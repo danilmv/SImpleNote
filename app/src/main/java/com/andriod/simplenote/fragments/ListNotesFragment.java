@@ -24,13 +24,13 @@ import com.andriod.simplenote.entity.Note;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
+import java.util.Map;
 import java.util.stream.Collectors;
 
-public class ListNotesFragment extends Fragment {
+public class ListNotesFragment extends Fragment implements ListNotesAdapter.OnItemClickListener {
 
     private static final String TAG = "@@@ListNotesFragment@";
-    private Set<Note> notes;
+    private Map<String, Note> notes;
     private BaseDataManager dataManager;
 
     private boolean showOnlyFavorites;
@@ -63,11 +63,7 @@ public class ListNotesFragment extends Fragment {
         recyclerView.setLayoutManager(new StaggeredGridLayoutManager(2, StaggeredGridLayoutManager.VERTICAL));
 
         adapter = new ListNotesAdapter();
-        adapter.setOnItemClickListener(note -> {
-            if (getController() != null) {
-                getController().changeNote(note);
-            }
-        });
+        adapter.setOnItemClickListener(this);
         recyclerView.setAdapter(adapter);
 
         view.findViewById(R.id.button_add_note).setOnClickListener(this::showPopupMenu);
@@ -116,8 +112,23 @@ public class ListNotesFragment extends Fragment {
         return (Controller) getActivity();
     }
 
+    @Override
+    public void onItemClick(Note note) {
+        if (getController() != null) {
+            getController().changeNote(note);
+        }
+    }
+
+    @Override
+    public void onFavorite(Note note) {
+        if (getController() != null) {
+            getController().noteSaved(note);
+        }
+    }
+
     public interface Controller {
         void changeNote(Note note);
+        void noteSaved(Note note);
     }
 
     private void showList() {
@@ -128,11 +139,11 @@ public class ListNotesFragment extends Fragment {
 
         List<Note> list;
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.N) {
-            list = notes.stream()
+            list = notes.values().stream()
                     .filter(note -> !showOnlyFavorites || note.isFavorite())
                     .collect(Collectors.toList());
         } else {
-            list = new ArrayList<>(notes);
+            list = new ArrayList<>(notes.values());
         }
         adapter.setData(list);
     }

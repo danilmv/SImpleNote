@@ -2,40 +2,50 @@ package com.andriod.simplenote.data;
 
 import android.util.Log;
 
-import androidx.annotation.NonNull;
-
 import com.andriod.simplenote.entity.Note;
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.OnSuccessListener;
-import com.google.android.gms.tasks.Task;
+import com.google.firebase.firestore.DocumentChange;
 import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.QueryDocumentSnapshot;
 
-import java.util.HashSet;
-import java.util.Set;
+import java.util.HashMap;
+import java.util.Map;
 
 public class FirestoreDataManager extends BaseDataManager {
     private static final String TAG = "@@@FirestoreDataManager";
     private final FirebaseFirestore db = FirebaseFirestore.getInstance();
-    private final Set<Note> notes = new HashSet<>();
-    private String collection = "notes";
+    private final Map<String, Note> notes = new HashMap<>();
+    private final String collection;
 
-    public FirestoreDataManager() {
+    public FirestoreDataManager(String user) {
+        collection = String.format("notes/users/%s", user);
+
         db.collection(collection)
-                .get()
-                .addOnSuccessListener(queryDocumentSnapshots -> {
-                    for (QueryDocumentSnapshot doc : queryDocumentSnapshots) {
-                        Note note = doc.toObject(Note.class);
-                        note.setId(doc.getId());
-                        notes.add(note);
+                .addSnapshotListener((value, error) -> {
+                    if (value == null) return;
+                    for (DocumentChange documentChange : value.getDocumentChanges()) {
+                        Note note = documentChange.getDocument().toObject(Note.class);
+                        Log.d(TAG, String.format("FirestoreDataManager.addSnapshot() called: header=[%s], type=[%s]",
+                                note.getHeader(),
+                                documentChange.getType().name()));
+                        switch (documentChange.getType()) {
+                            case ADDED:
+                                notes.put(note.getId(), note);
+                                break;
+                            case REMOVED:
+                                notes.remove(note.getId());
+                                break;
+                            case MODIFIED:
+                                notes.remove(note.getId());
+                                notes.put(note.getId(), note);
+                            default:
+                                break;
+                        }
                     }
                     notifySubscribers();
                 });
-
     }
 
     @Override
-    public Set<Note> getData() {
+    public Map<String, Note> getData() {
         return notes;
     }
 
@@ -49,17 +59,12 @@ public class FirestoreDataManager extends BaseDataManager {
                     .addOnSuccessListener(documentReference -> {
                         note.setId(documentReference.getId());
                         Log.i(TAG, String.format("Note#%s was added", note.getId()));
-                        notes.add(note);
-                        notifySubscribers();
                     });
         } else {
             db.collection(collection)
                     .document(id)
                     .set(note)
-                    .addOnSuccessListener(unused -> {
-                        Log.i(TAG, String.format("Note#%s was changed", note.getId()));
-                        notifySubscribers();
-                    });
+                    .addOnSuccessListener(unused -> Log.i(TAG, String.format("Note#%s was changed", note.getId())));
         }
     }
 
@@ -68,16 +73,12 @@ public class FirestoreDataManager extends BaseDataManager {
         db.collection(collection)
                 .document(note.getId())
                 .delete()
-                .addOnSuccessListener(unused -> {
-                    Log.d(TAG, String.format("Note#%s was deleted", note.getId()));
-                    notes.remove(note);
-                    notifySubscribers();
-                });
+                .addOnSuccessListener(unused -> Log.d(TAG, String.format("Note#%s was deleted", note.getId())));
     }
 
     @Override
     public void deleteAll() {
-        for (Note note : notes) {
+        for (Note note : notes.values()) {
             deleteData(note);
         }
     }

@@ -2,6 +2,9 @@ package com.andriod.simplenote.entity;
 
 import android.os.Parcel;
 import android.os.Parcelable;
+import android.util.Log;
+
+import androidx.annotation.Nullable;
 
 import com.google.firebase.firestore.DocumentId;
 
@@ -10,6 +13,7 @@ import java.util.Calendar;
 public class Note implements Parcelable {
 
     private static final int SHORT_CONTENT_LENGTH = 30;
+    private static final String TAG = "@@@Note@";
     @DocumentId
     private String id;
     private String header;

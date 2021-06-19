@@ -7,14 +7,14 @@ import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 
 import java.lang.reflect.Type;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.UUID;
 
 public class PreferencesDataManager extends BaseDataManager {
     private static final String LIST_NOTES_KEY = "LIST_NOTES_KEY";
 
-    private final Set<Note> notes = new HashSet<>();
+    private final Map<String, Note> notes = new HashMap<>();
     private final Gson gson = new Gson();
     private SharedPreferences sharedPreferences;
 
@@ -23,9 +23,9 @@ public class PreferencesDataManager extends BaseDataManager {
 
         String stringData = sharedPreferences.getString(LIST_NOTES_KEY, null);
         if (stringData != null && !stringData.isEmpty()) {
-            Type setType = new TypeToken<HashSet<Note>>() {
+            Type setType = new TypeToken<HashMap<String, Note>>() {
             }.getType();
-            notes.addAll(gson.fromJson(stringData, setType));
+            notes.putAll(gson.fromJson(stringData, setType));
         }
     }
 
@@ -34,7 +34,7 @@ public class PreferencesDataManager extends BaseDataManager {
     }
 
     @Override
-    public Set<Note> getData() {
+    public Map<String,Note> getData() {
         return notes;
     }
 
@@ -44,14 +44,14 @@ public class PreferencesDataManager extends BaseDataManager {
             String id = note.getId();
             if (id == null || id.isEmpty()) note.setId(UUID.randomUUID().toString());
 
-            notes.add(note);
+            notes.put(note.getId(), note);
         }
         saveData();
     }
 
     @Override
     public void deleteData(Note note) {
-        notes.remove(note);
+        notes.remove(note.getId());
         saveData();
     }
 

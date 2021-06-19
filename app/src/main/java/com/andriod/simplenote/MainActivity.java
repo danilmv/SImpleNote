@@ -1,8 +1,6 @@
 package com.andriod.simplenote;
 
-import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.fragment.app.FragmentTransaction;
 
 import android.os.Bundle;
 import android.util.Log;
@@ -58,10 +56,10 @@ public class MainActivity extends AppCompatActivity
         setBottomView(R.id.menu_bottom_item_list);
     }
 
-    private ListNotesFragment showList() {
-        Log.d(TAG, "showList() called");
-
-        ListNotesFragment fragment = (ListNotesFragment) getSupportFragmentManager().findFragmentByTag(FRAGMENT_LIST_NOTES);
+    private void showList(boolean showOnlyFavorites) {
+        Log.d(TAG, "showList() called with: showOnlyFavorites = [" + showOnlyFavorites + "]");
+        ListNotesFragment fragment = (ListNotesFragment) getSupportFragmentManager()
+                .findFragmentByTag(FRAGMENT_LIST_NOTES);
         if (fragment == null) {
             fragment = new ListNotesFragment();
         }
@@ -71,30 +69,25 @@ public class MainActivity extends AppCompatActivity
                 .replace(R.id.main_fragment_container, fragment, FRAGMENT_LIST_NOTES)
                 .commit();
 
-        return fragment;
-    }
-
-    private ListNotesFragment showList(boolean showOnlyFavorites) {
-        Log.d(TAG, "showList() called with: showOnlyFavorites = [" + showOnlyFavorites + "]");
-        ListNotesFragment fragment = showList();
         fragment.setMode(showOnlyFavorites);
-        return fragment;
     }
 
     private void showNote(Note note) {
-        FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
-        transaction.replace(
-                hasSecondContainer ? R.id.second_fragment_container : R.id.main_fragment_container,
-                NoteFragment.newInstance(note), FRAGMENT_NOTE);
-        transaction.commit();
+        getSupportFragmentManager()
+                .beginTransaction()
+                .replace(
+                        hasSecondContainer ? R.id.second_fragment_container : R.id.main_fragment_container,
+                        NoteFragment.newInstance(note), FRAGMENT_NOTE)
+                .commit();
     }
 
     private void showSettings() {
-        FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
-        transaction.replace(
-                hasSecondContainer ? R.id.second_fragment_container : R.id.main_fragment_container,
-                new SettingsFragment(), FRAGMENT_SETTINGS);
-        transaction.commit();
+        getSupportFragmentManager()
+                .beginTransaction()
+                .replace(
+                        hasSecondContainer ? R.id.second_fragment_container : R.id.main_fragment_container,
+                        new SettingsFragment(), FRAGMENT_SETTINGS)
+                .commit();
     }
 
     @Override
@@ -105,18 +98,17 @@ public class MainActivity extends AppCompatActivity
     @Override
     public void noteSaved(Note note) {
         getDataManager().updateData(note);
-        showList();
+        showList(false);
     }
 
-    private BaseDataManager getDataManager(){
-        NoteApplication application = (NoteApplication) getApplication();
-        return application.getDataManager();
+    private BaseDataManager getDataManager() {
+        return ((NoteApplication) getApplication()).getDataManager();
     }
 
     @Override
     public void deleteAll() {
         getDataManager().deleteAll();
-        showList();
+        showList(false);
         setBottomView(R.id.menu_bottom_item_list);
     }
 
@@ -126,18 +118,6 @@ public class MainActivity extends AppCompatActivity
             MenuItem item = bottomNavigationView.getMenu().findItem(bottomItemId);
             if (item != null) item.setChecked(true);
         }
-    }
-
-    @Override
-    protected void onRestoreInstanceState(@NonNull Bundle savedInstanceState) {
-        Log.d(TAG, "onRestoreInstanceState() called with: savedInstanceState = [" + savedInstanceState + "]");
-        super.onRestoreInstanceState(savedInstanceState);
-    }
-
-    @Override
-    protected void onRestart() {
-        Log.d(TAG, "onRestart() called");
-        super.onRestart();
     }
 
     @Override
