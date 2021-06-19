@@ -18,19 +18,7 @@ public class PreferencesDataManagerImpl extends BaseDataManager {
     private final Gson gson = new Gson();
     private SharedPreferences sharedPreferences;
 
-    private static PreferencesDataManagerImpl instance;
-
-    public static PreferencesDataManagerImpl getInstance(SharedPreferences preferences) {
-        if (instance == null) {
-            instance = new PreferencesDataManagerImpl(preferences);
-        } else {
-            instance.setSharedPreferences(preferences);
-        }
-
-        return instance;
-    }
-
-    private PreferencesDataManagerImpl(SharedPreferences preferences) {
+    public PreferencesDataManagerImpl(SharedPreferences preferences) {
         setSharedPreferences(preferences);
 
         String stringData = sharedPreferences.getString(LIST_NOTES_KEY, null);
@@ -59,24 +47,18 @@ public class PreferencesDataManagerImpl extends BaseDataManager {
             notes.add(note);
         }
         saveData();
-
-        notifySubscribers();
     }
 
     @Override
     public void deleteData(Note note) {
         notes.remove(note);
         saveData();
-
-        notifySubscribers();
     }
 
     @Override
     public void deleteAll() {
         notes.clear();
         saveData();
-
-        notifySubscribers();
     }
 
     private void saveData() {
@@ -84,5 +66,7 @@ public class PreferencesDataManagerImpl extends BaseDataManager {
                 .edit()
                 .putString(LIST_NOTES_KEY, gson.toJson(notes))
                 .apply();
+
+        notifySubscribers();
     }
 }

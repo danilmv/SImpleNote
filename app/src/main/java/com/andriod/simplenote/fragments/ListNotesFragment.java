@@ -41,7 +41,6 @@ public class ListNotesFragment extends Fragment {
         Log.d(TAG, "subscription called");
         loadData();
         showList();
-        if (adapter != null) adapter.notifyDataSetChanged();
     };
 
     public ListNotesFragment() {

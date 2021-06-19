@@ -16,7 +16,7 @@ public class NoteApplication extends Application {
     public void onCreate() {
         super.onCreate();
 
-        dataManager = PreferencesDataManagerImpl.getInstance(
+        dataManager = new PreferencesDataManagerImpl(
                 getApplicationContext()
                         .getSharedPreferences(SHARED_PREFERENCES_NOTES, Context.MODE_PRIVATE));
     }
