@@ -142,11 +142,6 @@ public class ListNotesFragment extends Fragment {
         showList();
     }
 
-    public void deleteAll() {
-        Log.d(TAG, "deleteAll() called");
-        getDataManager().deleteAll();
-    }
-
     @Override
     public boolean onContextItemSelected(@NonNull MenuItem item) {
         Note note = adapter.getCurrentNote();

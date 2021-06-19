@@ -3,25 +3,32 @@ package com.andriod.simplenote.entity;
 import android.os.Parcel;
 import android.os.Parcelable;
 
+import com.google.firebase.firestore.DocumentId;
+
 import java.util.Calendar;
 
 public class Note implements Parcelable {
 
     private static final int SHORT_CONTENT_LENGTH = 30;
+    @DocumentId
     private String id;
     private String header;
     private long date;
     private boolean favorite;
 
-    public enum NoteType{
+    public enum NoteType {
         Text(0), HTTP(1), Video(2);
         private final int value;
-        NoteType(int value){this.value = value;}
+
+        NoteType(int value) {
+            this.value = value;
+        }
 
         public int getValue() {
             return value;
         }
     }
+
     private NoteType type;
 
     private String content;
@@ -30,7 +37,7 @@ public class Note implements Parcelable {
         this(NoteType.Text, null, getCurrentDate());
     }
 
-    public Note(NoteType type){
+    public Note(NoteType type) {
         this(type, null, getCurrentDate());
     }
 
@@ -84,7 +91,7 @@ public class Note implements Parcelable {
         return id;
     }
 
-    public void setId(String id){
+    public void setId(String id) {
         this.id = id;
     }
 
@@ -128,8 +135,9 @@ public class Note implements Parcelable {
         this.content = content;
     }
 
-    public String getShortContent(){
-        if (content==null || content.isEmpty() || content.length() <= SHORT_CONTENT_LENGTH) return content;
+    public String getShortContent() {
+        if (content == null || content.isEmpty() || content.length() <= SHORT_CONTENT_LENGTH)
+            return content;
         return String.format("%s...", content.substring(0, SHORT_CONTENT_LENGTH));
     }
 }

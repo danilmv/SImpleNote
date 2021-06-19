@@ -115,7 +115,8 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     public void deleteAll() {
-        showList(false).deleteAll();
+        getDataManager().deleteAll();
+        showList();
         setBottomView(R.id.menu_bottom_item_list);
     }
 
