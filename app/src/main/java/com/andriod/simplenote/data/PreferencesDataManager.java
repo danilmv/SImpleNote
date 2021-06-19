@@ -11,14 +11,14 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
 
-public class PreferencesDataManagerImpl extends BaseDataManager {
+public class PreferencesDataManager extends BaseDataManager {
     private static final String LIST_NOTES_KEY = "LIST_NOTES_KEY";
 
     private final Set<Note> notes = new HashSet<>();
     private final Gson gson = new Gson();
     private SharedPreferences sharedPreferences;
 
-    public PreferencesDataManagerImpl(SharedPreferences preferences) {
+    public PreferencesDataManager(SharedPreferences preferences) {
         setSharedPreferences(preferences);
 
         String stringData = sharedPreferences.getString(LIST_NOTES_KEY, null);
