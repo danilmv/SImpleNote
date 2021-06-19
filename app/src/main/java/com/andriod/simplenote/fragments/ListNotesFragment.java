@@ -1,7 +1,6 @@
 package com.andriod.simplenote.fragments;
 
 import android.content.Context;
-import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -17,15 +16,13 @@ import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.recyclerview.widget.StaggeredGridLayoutManager;
 
+import com.andriod.simplenote.NoteApplication;
 import com.andriod.simplenote.R;
 import com.andriod.simplenote.adapter.ListNotesAdapter;
+import com.andriod.simplenote.data.BaseDataManager;
 import com.andriod.simplenote.entity.Note;
-import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
 
-import java.lang.reflect.Type;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -33,14 +30,22 @@ import java.util.stream.Collectors;
 public class ListNotesFragment extends Fragment {
 
     private static final String TAG = "@@@ListNotesFragment@";
-    private static final String SHARED_PREFERENCES_NOTES = "SHARED_PREFERENCES_NOTES";
-    private static final String LIST_NOTES_KEY = "LIST_NOTES_KEY";
-    private final Set<Note> notes = new HashSet<>();
-    private final Gson gson = new Gson();
+    private Set<Note> notes;
+    private BaseDataManager dataManager;
 
     private boolean showOnlyFavorites;
 
     private ListNotesAdapter adapter;
+
+    private final Runnable subscriber = () -> {
+        Log.d(TAG, "subscription called");
+        loadData();
+        showList();
+        if (adapter != null) adapter.notifyDataSetChanged();
+    };
+
+    public ListNotesFragment() {
+    }
 
     @Nullable
     @Override
@@ -51,7 +56,7 @@ public class ListNotesFragment extends Fragment {
 
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
-        Log.d(TAG, String.format("onViewCreated() called with: notes.size = [%d]", notes.size()));
+        Log.d(TAG, String.format("onViewCreated() called with: notes.size = [%d]", notes != null ? notes.size() : 0));
 
         super.onViewCreated(view, savedInstanceState);
 
@@ -94,18 +99,18 @@ public class ListNotesFragment extends Fragment {
             throw new IllegalStateException("Activity must implement Controller");
         }
 
-        loadData(context);
+        getDataManager().subscribe(subscriber);
     }
 
-    private void loadData(Context context) {
-        Log.d(TAG, "loadData() called with: context = [" + context + "]");
-        SharedPreferences sharedPreferences = context.getSharedPreferences(SHARED_PREFERENCES_NOTES, Context.MODE_PRIVATE);
-        String stringData = sharedPreferences.getString(LIST_NOTES_KEY, null);
-        if (stringData != null && !stringData.isEmpty()) {
-            Type setType = new TypeToken<HashSet<Note>>() {
-            }.getType();
-            notes.addAll(gson.fromJson(stringData, setType));
-        }
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        getDataManager().unSubscribe(subscriber);
+    }
+
+    private void loadData() {
+        Log.d(TAG, "loadData() called");
+        notes = getDataManager().getData();
     }
 
     private Controller getController() {
@@ -117,8 +122,10 @@ public class ListNotesFragment extends Fragment {
     }
 
     private void showList() {
-        Log.d(TAG, String.format("showList() called for note.size = [%d]", notes.size()));
+        Log.d(TAG, String.format("showList() called for note.size = [%d]", notes != null ? notes.size() : 0));
         if (adapter == null) return;
+
+        if (notes == null) loadData();
 
         List<Note> list;
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.N) {
@@ -131,28 +138,6 @@ public class ListNotesFragment extends Fragment {
         adapter.setData(list);
     }
 
-    public void addNote(Note note) {
-        notes.add(note);
-        showList();
-    }
-
-    @Override
-    public void onStop() {
-        super.onStop();
-        saveData();
-    }
-
-    private void saveData() {
-        Log.d(TAG, "saveData: ");
-        if (getActivity() != null) {
-            SharedPreferences sharedPreferences = getActivity().getSharedPreferences(SHARED_PREFERENCES_NOTES, Context.MODE_PRIVATE);
-            sharedPreferences
-                    .edit()
-                    .putString(LIST_NOTES_KEY, gson.toJson(notes))
-                    .apply();
-        }
-    }
-
     public void setMode(boolean showOnlyFavorites) {
         this.showOnlyFavorites = showOnlyFavorites;
         showList();
@@ -160,9 +145,7 @@ public class ListNotesFragment extends Fragment {
 
     public void deleteAll() {
         Log.d(TAG, "deleteAll() called");
-        notes.clear();
-        saveData();
-        showList();
+        getDataManager().deleteAll();
     }
 
     @Override
@@ -170,9 +153,18 @@ public class ListNotesFragment extends Fragment {
         Note note = adapter.getCurrentNote();
         if (note != null) {
             Log.d(TAG, String.format("note [%s] was deleted", note.getHeader()));
-            notes.remove(note);
-            showList();
+
+            getDataManager().deleteData(note);
         }
         return true;
+    }
+
+    private BaseDataManager getDataManager() {
+        if (dataManager == null) {
+            NoteApplication application = (NoteApplication) requireActivity().getApplication();
+            dataManager = application.getDataManager();
+        }
+
+        return dataManager;
     }
 }

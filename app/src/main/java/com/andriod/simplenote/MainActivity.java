@@ -8,6 +8,7 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.MenuItem;
 
+import com.andriod.simplenote.data.BaseDataManager;
 import com.andriod.simplenote.entity.Note;
 import com.andriod.simplenote.fragments.ListNotesFragment;
 import com.andriod.simplenote.fragments.NoteFragment;
@@ -103,7 +104,13 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     public void noteSaved(Note note) {
-        showList().addNote(note);
+        getDataManager().updateData(note);
+        showList();
+    }
+
+    private BaseDataManager getDataManager(){
+        NoteApplication application = (NoteApplication) getApplication();
+        return application.getDataManager();
     }
 
     @Override
