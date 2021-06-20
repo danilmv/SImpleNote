@@ -1,5 +1,6 @@
 package com.andriod.simplenote;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.FragmentTransaction;
 
@@ -28,6 +29,7 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        Log.d(TAG, "onCreate() called with: savedInstanceState = [" + savedInstanceState + "]");
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
@@ -52,6 +54,7 @@ public class MainActivity extends AppCompatActivity
         });
 
         showList(false);
+        setBottomView(R.id.menu_bottom_item_list);
     }
 
     private ListNotesFragment showList() {
@@ -114,9 +117,30 @@ public class MainActivity extends AppCompatActivity
     }
 
     private void setBottomView(int bottom_item_id) {
+        Log.d(TAG, "setBottomView() called with: bottom_item_id = [" + bottom_item_id + "]");
         if (bottomNavigationView != null) {
             MenuItem item = bottomNavigationView.getMenu().findItem(bottom_item_id);
             if (item != null) item.setChecked(true);
         }
+    }
+
+    @Override
+    protected void onRestoreInstanceState(@NonNull Bundle savedInstanceState) {
+        Log.d(TAG, "onRestoreInstanceState() called with: savedInstanceState = [" + savedInstanceState + "]");
+        super.onRestoreInstanceState(savedInstanceState);
+    }
+
+    @Override
+    protected void onRestart() {
+        Log.d(TAG, "onRestart() called");
+        super.onRestart();
+    }
+
+    @Override
+    protected void onResume() {
+        Log.d(TAG, "onResume() called");
+        super.onResume();
+
+        setBottomView(R.id.menu_bottom_item_list);
     }
 }
