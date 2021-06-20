@@ -11,8 +11,9 @@ public class Note implements Parcelable {
     private final String id;
     private String header;
     private long date;
+    private boolean favorite;
 
-    public Note(){
+    public Note() {
         this(null, getCurrentDate());
     }
 
@@ -26,6 +27,7 @@ public class Note implements Parcelable {
         id = in.readString();
         header = in.readString();
         date = in.readLong();
+        favorite = in.readByte() == 1;
     }
 
     @Override
@@ -33,6 +35,7 @@ public class Note implements Parcelable {
         dest.writeString(id);
         dest.writeString(header);
         dest.writeLong(date);
+        dest.writeByte((byte) (favorite ? 1 : 0));
     }
 
     @Override
@@ -76,4 +79,11 @@ public class Note implements Parcelable {
         this.date = date;
     }
 
+    public boolean isFavorite() {
+        return favorite;
+    }
+
+    public void setFavorite(boolean favorite) {
+        this.favorite = favorite;
+    }
 }
