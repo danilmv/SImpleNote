@@ -10,3 +10,8 @@
 <img src="printscreens/lesson7_1.png" width="32%">
 <img src="printscreens/lesson7_2.png" width="32%">
 <img src="printscreens/lesson7_3.png" width="52%">
+
+## Lesson8: RecyclerView
+### Preview
+<img src="printscreens/lesson8.png" width="32%">
+
