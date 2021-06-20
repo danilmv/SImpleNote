@@ -61,5 +61,6 @@ public class SettingsFragment extends Fragment {
         void deleteAll();
         void signIn();
         void signOut();
+        String getUserName();
     }
 }

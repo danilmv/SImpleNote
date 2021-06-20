@@ -14,7 +14,6 @@ import java.util.UUID;
 public class PreferencesDataManager extends BaseDataManager {
     private static final String LIST_NOTES_KEY = "LIST_NOTES_KEY";
 
-    private final Map<String, Note> notes = new HashMap<>();
     private final Gson gson = new Gson();
     private SharedPreferences sharedPreferences;
 

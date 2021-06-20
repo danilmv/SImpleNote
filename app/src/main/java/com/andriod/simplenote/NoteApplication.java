@@ -20,7 +20,7 @@ public class NoteApplication extends Application {
 //        dataManager = new PreferencesDataManager(
 //                getApplicationContext()
 //                        .getSharedPreferences(SHARED_PREFERENCES_NOTES, Context.MODE_PRIVATE));
-        dataManager = new FirestoreDataManager("default");
+        dataManager = new FirestoreDataManager();
     }
 
     public BaseDataManager getDataManager() {

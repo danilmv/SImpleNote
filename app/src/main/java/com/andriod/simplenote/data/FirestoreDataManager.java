@@ -6,42 +6,14 @@ import com.andriod.simplenote.entity.Note;
 import com.google.firebase.firestore.DocumentChange;
 import com.google.firebase.firestore.FirebaseFirestore;
 
-import java.util.HashMap;
 import java.util.Map;
 
 public class FirestoreDataManager extends BaseDataManager {
     private static final String TAG = "@@@FirestoreDataManager";
     private final FirebaseFirestore db = FirebaseFirestore.getInstance();
-    private final Map<String, Note> notes = new HashMap<>();
-    private final String collection;
+    private String collection;
 
-    public FirestoreDataManager(String user) {
-        collection = String.format("notes/users/%s", user);
-
-        db.collection(collection)
-                .addSnapshotListener((value, error) -> {
-                    if (value == null) return;
-                    for (DocumentChange documentChange : value.getDocumentChanges()) {
-                        Note note = documentChange.getDocument().toObject(Note.class);
-                        Log.d(TAG, String.format("FirestoreDataManager.addSnapshot() called: header=[%s], type=[%s]",
-                                note.getHeader(),
-                                documentChange.getType().name()));
-                        switch (documentChange.getType()) {
-                            case ADDED:
-                                notes.put(note.getId(), note);
-                                break;
-                            case REMOVED:
-                                notes.remove(note.getId());
-                                break;
-                            case MODIFIED:
-                                notes.remove(note.getId());
-                                notes.put(note.getId(), note);
-                            default:
-                                break;
-                        }
-                    }
-                    notifySubscribers();
-                });
+    public FirestoreDataManager() {
     }
 
     @Override
@@ -81,5 +53,37 @@ public class FirestoreDataManager extends BaseDataManager {
         for (Note note : notes.values()) {
             deleteData(note);
         }
+    }
+
+    @Override
+    public void setUser(String user) {
+        super.setUser(user);
+
+        collection = String.format("notes/users/%s", user);
+
+        db.collection(collection)
+                .addSnapshotListener((value, error) -> {
+                    if (value == null) return;
+                    for (DocumentChange documentChange : value.getDocumentChanges()) {
+                        Note note = documentChange.getDocument().toObject(Note.class);
+                        Log.d(TAG, String.format("FirestoreDataManager.addSnapshot() called: header=[%s], type=[%s]",
+                                note.getHeader(),
+                                documentChange.getType().name()));
+                        switch (documentChange.getType()) {
+                            case ADDED:
+                                notes.put(note.getId(), note);
+                                break;
+                            case REMOVED:
+                                notes.remove(note.getId());
+                                break;
+                            case MODIFIED:
+                                notes.remove(note.getId());
+                                notes.put(note.getId(), note);
+                            default:
+                                break;
+                        }
+                    }
+                    notifySubscribers();
+                });
     }
 }

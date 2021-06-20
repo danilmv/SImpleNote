@@ -68,6 +68,11 @@ public class MainActivity extends AppCompatActivity
     }
 
     private void showList(boolean showOnlyFavorites) {
+        if (userName == null || userName.isEmpty()) {
+            signIn();
+            return;
+        }
+
         Log.d(TAG, "showList() called with: showOnlyFavorites = [" + showOnlyFavorites + "]");
         ListNotesFragment fragment = (ListNotesFragment) getSupportFragmentManager()
                 .findFragmentByTag(FRAGMENT_LIST_NOTES);
@@ -81,6 +86,8 @@ public class MainActivity extends AppCompatActivity
                 .commit();
 
         fragment.setMode(showOnlyFavorites);
+
+        setBottomView(showOnlyFavorites ? R.id.menu_bottom_item_favorites : R.id.menu_bottom_item_list);
     }
 
     private void showNote(Note note) {
@@ -120,7 +127,6 @@ public class MainActivity extends AppCompatActivity
     public void deleteAll() {
         getDataManager().deleteAll();
         showList(false);
-        setBottomView(R.id.menu_bottom_item_list);
     }
 
     private void setBottomView(int bottomItemId) {
@@ -149,17 +155,19 @@ public class MainActivity extends AppCompatActivity
                 .build();
 
         googleSignInClient = GoogleSignIn.getClient(this, gso);
-        final Account account = gso.getAccount();
+        Account account = gso.getAccount();
+        if (account == null) {
+            GoogleSignInAccount googleAccount = GoogleSignIn.getLastSignedInAccount(this);
+            if (googleAccount != null) {
+                account = googleAccount.getAccount();
+            }
+        }
+
         if (account != null) {
             userName = account.name;
         }
 
-        if (userName == null || userName.isEmpty()) {
-            signIn();
-        } else {
-            showList(false);
-            setBottomView(R.id.menu_bottom_item_list);
-        }
+        showList(false);
     }
 
     @Override
@@ -188,10 +196,16 @@ public class MainActivity extends AppCompatActivity
                 e.printStackTrace();
             }
 
-            if (userName!=null && !userName.isEmpty()){
+            if (userName != null && !userName.isEmpty()) {
+                getDataManager().setUser(userName);
+
                 showList(false);
-                setBottomView(R.id.menu_bottom_item_list);
             }
         }
+    }
+
+    @Override
+    public String getUserName() {
+        return userName;
     }
 }
