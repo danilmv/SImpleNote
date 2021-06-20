@@ -33,9 +33,12 @@ public class ListNotesFragment extends Fragment {
     private final Set<Note> notes = new HashSet<>();
     private final Gson gson = new Gson();
 
+    private boolean showOnlyFavorites;
+
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+        Log.d(TAG, "onCreateView() called");
         return inflater.inflate(R.layout.fragment_list_notes, container, false);
     }
 
@@ -57,15 +60,22 @@ public class ListNotesFragment extends Fragment {
 
     @Override
     public void onAttach(@NonNull Context context) {
+        Log.d(TAG, "onAttach() called");
         super.onAttach(context);
         if (!(context instanceof Controller)) {
             throw new IllegalStateException("Activity must implement Controller");
         }
 
+        loadData(context);
+    }
+
+    private void loadData(Context context) {
+        Log.d(TAG, "loadData() called with: context = [" + context + "]");
         SharedPreferences sharedPreferences = context.getSharedPreferences(SHARED_PREFERENCES_NOTES, Context.MODE_PRIVATE);
         String stringData = sharedPreferences.getString(LIST_NOTES_KEY, null);
         if (stringData != null && !stringData.isEmpty()) {
-            Type setType = new TypeToken<HashSet<Note>>(){}.getType();
+            Type setType = new TypeToken<HashSet<Note>>() {
+            }.getType();
             notes.addAll(gson.fromJson(stringData, setType));
         }
     }
@@ -81,11 +91,15 @@ public class ListNotesFragment extends Fragment {
     private void showList() {
         Log.d(TAG, String.format("showList() called for note.size = [%d]", notes.size()));
 
+        if (container == null) return;
+
         container.removeAllViews();
         LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
         params.setMargins(10, 10, 10, 10);
 
         for (Note note : notes) {
+            if (showOnlyFavorites && !note.isFavorite()) continue;
+
             TextView itemView = new TextView(getContext());
             itemView.setText(note.getHeader());
             itemView.setLayoutParams(params);
@@ -108,6 +122,11 @@ public class ListNotesFragment extends Fragment {
     @Override
     public void onStop() {
         super.onStop();
+        saveData();
+    }
+
+    private void saveData() {
+        Log.d(TAG, "saveData: ");
         if (getActivity() != null) {
             SharedPreferences sharedPreferences = getActivity().getSharedPreferences(SHARED_PREFERENCES_NOTES, Context.MODE_PRIVATE);
             sharedPreferences
@@ -115,5 +134,23 @@ public class ListNotesFragment extends Fragment {
                     .putString(LIST_NOTES_KEY, gson.toJson(notes))
                     .apply();
         }
+    }
+
+    public void setMode(boolean showOnlyFavorites) {
+        this.showOnlyFavorites = showOnlyFavorites;
+        showList();
+    }
+
+    public void deleteAll() {
+        Log.d(TAG, "deleteAll() called");
+        notes.clear();
+        saveData();
+        showList();
+    }
+
+    @Override
+    public void onResume() {
+        Log.d(TAG, "onResume() called");
+        super.onResume();
     }
 }

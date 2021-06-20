@@ -3,4 +3,7 @@
     <string name="add_note_button">Add Note</string>
     <string name="save_button">Save</string>
     <string name="header_hint">Header:</string>
+    <string name="list">list</string>
+    <string name="favorites">favorites</string>
+    <string name="settings">settings</string>
 </resources>

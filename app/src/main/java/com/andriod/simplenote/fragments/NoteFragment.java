@@ -6,6 +6,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
+import android.widget.ToggleButton;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -47,10 +48,13 @@ public class NoteFragment extends Fragment {
 
         editTextHeader = view.findViewById(R.id.edit_text_header);
         editTextHeader.setText(note.getHeader());
+        ToggleButton toggleButtonFavorite = view.findViewById(R.id.toggle_favorite);
+        toggleButtonFavorite.setChecked(note.isFavorite());
 
         view.findViewById(R.id.button_save_note).setOnClickListener(v -> {
             if (getController() != null) {
                 note.setHeader(editTextHeader.getText().toString());
+                note.setFavorite(toggleButtonFavorite.isChecked());
                 getController().noteSaved(note);
             }
         });
