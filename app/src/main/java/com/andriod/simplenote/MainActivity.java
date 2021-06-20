@@ -165,6 +165,10 @@ public class MainActivity extends AppCompatActivity
 
         if (account != null) {
             userName = account.name;
+
+            getDataManager().setUser(userName);
+
+            Log.d(TAG, String.format("AUTHORIZED as [%s]", userName));
         }
 
         showList(false);
@@ -177,6 +181,8 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     public void signOut() {
+        Log.d(TAG, String.format("signOut() called: [%s sign out]", userName));
+        userName = null;
         googleSignInClient.signOut()
                 .addOnCompleteListener(task -> showSettings());
     }
@@ -191,6 +197,8 @@ public class MainActivity extends AppCompatActivity
                 GoogleSignInAccount account = task.getResult(ApiException.class);
                 if (account != null && account.getAccount() != null) {
                     userName = account.getAccount().name;
+
+                    Log.d(TAG, String.format("AUTHORIZED as [%s]", userName));
                 }
             } catch (ApiException e) {
                 e.printStackTrace();

@@ -57,7 +57,14 @@ public class FirestoreDataManager extends BaseDataManager {
 
     @Override
     public void setUser(String user) {
-        super.setUser(user);
+
+        if (this.user == null || !this.user.equals(user)) {
+            notes.clear();
+        } else {
+            return;
+        }
+
+        this.user = user;
 
         collection = String.format("notes/users/%s", user);
 

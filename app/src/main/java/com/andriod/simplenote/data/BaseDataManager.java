@@ -35,7 +35,5 @@ public abstract class BaseDataManager {
     }
 
     public void setUser(String user) {
-        if (this.user == null || !this.user.equals(user)) notes.clear();
-        this.user = user;
     }
 }
