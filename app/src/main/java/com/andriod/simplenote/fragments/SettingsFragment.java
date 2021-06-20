@@ -30,6 +30,18 @@ public class SettingsFragment extends Fragment {
                 getController().deleteAll();
             }
         });
+
+        view.findViewById(R.id.button_sign_in).setOnClickListener(v -> {
+            if (getController()!=null){
+                getController().signIn();
+            }
+        });
+
+        view.findViewById(R.id.button_sign_out).setOnClickListener(v -> {
+            if (getController()!=null){
+                getController().signOut();
+            }
+        });
     }
 
     @Override
@@ -47,5 +59,7 @@ public class SettingsFragment extends Fragment {
 
     public interface Controller {
         void deleteAll();
+        void signIn();
+        void signOut();
     }
 }
