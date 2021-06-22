@@ -13,4 +13,8 @@
     <string name="sign_in">sign in</string>
     <string name="sing_out">sing out</string>
     <string name="delete_all">Delete all</string>
+    <string name="Yes">Yes</string>
+    <string name="Cancel">Cancel</string>
+    <string name="delete_dialog_header">Delete every notes!</string>
+    <string name="delete_dialog_message">Are you sure?</string>
 </resources>
