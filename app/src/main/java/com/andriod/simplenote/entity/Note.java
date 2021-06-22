@@ -144,4 +144,11 @@ public class Note implements Parcelable {
             return content;
         return String.format("%s...", content.substring(0, SHORT_CONTENT_LENGTH));
     }
+
+    public boolean checkSearch(String searchQuery) {
+        if (searchQuery == null || searchQuery.isEmpty()) return false;
+
+        if (header != null && header.contains(searchQuery)) return true;
+        return content != null && content.contains(searchQuery);
+    }
 }
