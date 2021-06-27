@@ -5,14 +5,17 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.PopupMenu;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
-import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.recyclerview.widget.StaggeredGridLayoutManager;
 
 import com.andriod.simplenote.R;
 import com.andriod.simplenote.adapter.ListNotesAdapter;
@@ -53,7 +56,7 @@ public class ListNotesFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
 
         RecyclerView recyclerView = view.findViewById(R.id.recycler_view);
-        recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
+        recyclerView.setLayoutManager(new StaggeredGridLayoutManager(2, StaggeredGridLayoutManager.VERTICAL));
 
         adapter = new ListNotesAdapter();
         adapter.setOnItemClickListener(note -> {
@@ -63,13 +66,24 @@ public class ListNotesFragment extends Fragment {
         });
         recyclerView.setAdapter(adapter);
 
-        view.findViewById(R.id.button_add_note).setOnClickListener(v -> {
-            if (getController() != null) {
-                getController().changeNote(new Note());
-            }
-        });
+        view.findViewById(R.id.button_add_note).setOnClickListener(this::showPopupMenu);
 
         showList();
+    }
+
+    private void showPopupMenu(View v) {
+        if (getController() != null) {
+            PopupMenu popupMenu = new PopupMenu(getContext(), v);
+            Menu menu = popupMenu.getMenu();
+            for (Note.NoteType value : Note.NoteType.values()) {
+                MenuItem item = menu.add(value.name());
+                item.setOnMenuItemClickListener(item1 -> {
+                    getController().changeNote(new Note(value));
+                    return true;
+                });
+            }
+            popupMenu.show();
+        }
     }
 
     @Override
@@ -152,8 +166,13 @@ public class ListNotesFragment extends Fragment {
     }
 
     @Override
-    public void onResume() {
-        Log.d(TAG, "onResume() called");
-        super.onResume();
+    public boolean onContextItemSelected(@NonNull MenuItem item) {
+        Note note = adapter.getCurrentNote();
+        if (note != null) {
+            Log.d(TAG, String.format("note [%s] was deleted", note.getHeader()));
+            notes.remove(note);
+            showList();
+        }
+        return true;
     }
 }

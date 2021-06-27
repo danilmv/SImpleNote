@@ -1,12 +1,20 @@
 package com.andriod.simplenote.fragments;
 
 import android.content.Context;
+import android.net.Uri;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.webkit.WebView;
+import android.webkit.WebViewClient;
+import android.widget.ArrayAdapter;
 import android.widget.EditText;
+import android.widget.FrameLayout;
+import android.widget.MediaController;
+import android.widget.Spinner;
 import android.widget.ToggleButton;
+import android.widget.VideoView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -15,6 +23,11 @@ import androidx.fragment.app.Fragment;
 import com.andriod.simplenote.R;
 import com.andriod.simplenote.entity.Note;
 
+import java.util.Arrays;
+import java.util.List;
+
+import static com.andriod.simplenote.entity.Note.NoteType.*;
+
 public class NoteFragment extends Fragment {
 
     private static final String NOTE_EXTRA_KEY = "NOTE_EXTRA_KEY";
@@ -22,6 +35,8 @@ public class NoteFragment extends Fragment {
     private Note note;
 
     private EditText editTextHeader;
+    private EditText editTextContent;
+    private Spinner spinner;
 
     public static NoteFragment newInstance(Note note) {
         NoteFragment instance = new NoteFragment();
@@ -44,6 +59,7 @@ public class NoteFragment extends Fragment {
 
         if (getArguments() != null) {
             note = getArguments().getParcelable(NOTE_EXTRA_KEY);
+            showContent(view);
         }
 
         editTextHeader = view.findViewById(R.id.edit_text_header);
@@ -55,9 +71,56 @@ public class NoteFragment extends Fragment {
             if (getController() != null) {
                 note.setHeader(editTextHeader.getText().toString());
                 note.setFavorite(toggleButtonFavorite.isChecked());
+                note.setType(valueOf(spinner.getSelectedItem().toString()));
+                note.setContent(editTextContent.getText().toString());
                 getController().noteSaved(note);
             }
         });
+
+        spinner = view.findViewById(R.id.spinner_note_type);
+        List<Note.NoteType> spinnerValues = Arrays.asList(values());
+        ArrayAdapter<Note.NoteType> adapter = new ArrayAdapter<>(getContext(), android.R.layout.simple_spinner_dropdown_item, spinnerValues);
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        spinner.setAdapter(adapter);
+        spinner.setSelection(adapter.getPosition(note.getType()));
+
+        editTextContent = view.findViewById(R.id.edit_text_content);
+        editTextContent.setText(note.getContent());
+    }
+
+    private void showContent(View view) {
+        FrameLayout container = view.findViewById(R.id.content_container);
+        container.removeAllViews();
+        String content = note.getContent();
+        if (content == null || content.isEmpty()) return;
+
+        switch (note.getType()) {
+            case Text:
+                break;
+            case Video:
+                VideoView videoView = new VideoView(getContext());
+                videoView.setVideoURI(Uri.parse(content));
+                videoView.setOnPreparedListener(mp -> {
+                    MediaController mediaController = new MediaController(getContext());
+                    videoView.setMediaController(mediaController);
+                    mediaController.setAnchorView(videoView);
+                });
+                container.addView(videoView);
+                videoView.start();
+                break;
+
+            case HTTP:
+                WebView webView = new WebView(getContext());
+                webView.setWebViewClient(new WebViewClient());
+                webView.setInitialScale(70);
+                webView.getSettings().setLoadWithOverviewMode(true);
+                webView.getSettings().setUseWideViewPort(true);
+                container.addView(webView);
+                webView.loadUrl(content);
+                break;
+            default:
+
+        }
     }
 
     private Controller getController() {

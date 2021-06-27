@@ -6,4 +6,8 @@
     <string name="list">list</string>
     <string name="favorites">favorites</string>
     <string name="settings">settings</string>
+    <string name="content">content:</string>
+    <string name="type">type:</string>
+    <string name="delete_menu_item">delete note</string>
+    <string name="text_note">Text-note</string>
 </resources>
