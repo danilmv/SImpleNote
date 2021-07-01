@@ -29,7 +29,8 @@ public class ListNotesAdapter extends RecyclerView.Adapter<ListNotesAdapter.Base
     }
 
     public interface OnItemClickListener {
-        void onClick(Note note);
+        void onItemClick(Note note);
+        void onFavorite(Note note);
     }
 
     @NonNull
@@ -69,26 +70,34 @@ public class ListNotesAdapter extends RecyclerView.Adapter<ListNotesAdapter.Base
 
         protected final TextView textViewHeader = itemView.findViewById(R.id.text_view_header);
         protected final TextView textViewContent = itemView.findViewById(R.id.text_view_content);
+        private boolean isBinding;
 
         public BaseViewHolder(@NonNull View itemView, OnItemClickListener listener) {
             super(itemView);
 
             itemView.setOnClickListener(v -> {
                 if (listener != null) {
-                    listener.onClick(note);
+                    listener.onItemClick(note);
                 }
             });
 
-            toggleFavorite.setOnCheckedChangeListener((buttonView, isChecked) -> note.setFavorite(isChecked));
+            toggleFavorite.setOnCheckedChangeListener((buttonView, isChecked) -> {
+                note.setFavorite(isChecked);
+                if (listener != null && !isBinding) {
+                    listener.onFavorite(note);
+                }
+            });
 
             itemView.setOnCreateContextMenuListener(this);
         }
 
         public void bind(Note note) {
+            isBinding = true;
             this.note = note;
             toggleFavorite.setChecked(note.isFavorite());
             textViewHeader.setText(note.getHeader());
             textViewContent.setText(note.getShortContent());
+            isBinding = false;
         }
 
         @Override
