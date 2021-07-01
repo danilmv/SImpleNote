@@ -5,6 +5,7 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -25,11 +26,36 @@ public class SettingsFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        view.findViewById(R.id.button_delete_all).setOnClickListener(v -> {
+        String userName = null;
+
+        if (getController() != null) {
+            userName = getController().getUserName();
+        }
+
+        Button buttonDelete = view.findViewById(R.id.button_delete_all);
+        buttonDelete.setOnClickListener(v -> {
             if (getController() != null) {
                 getController().deleteAll();
             }
         });
+        buttonDelete.setEnabled(userName != null && !userName.isEmpty());
+
+        Button buttonSignIn = view.findViewById(R.id.button_sign_in);
+        buttonSignIn.setOnClickListener(v -> {
+            if (getController() != null) {
+                getController().signIn();
+            }
+        });
+        buttonSignIn.setEnabled(userName == null || userName.isEmpty());
+
+        Button buttonSignOut = view.findViewById(R.id.button_sign_out);
+        buttonSignOut.setOnClickListener(v -> {
+            if (getController() != null) {
+                getController().signOut();
+            }
+        });
+        buttonSignOut.setEnabled(userName != null && !userName.isEmpty());
+
     }
 
     @Override
@@ -47,5 +73,11 @@ public class SettingsFragment extends Fragment {
 
     public interface Controller {
         void deleteAll();
+
+        void signIn();
+
+        void signOut();
+
+        String getUserName();
     }
 }

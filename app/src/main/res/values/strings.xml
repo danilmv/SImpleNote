@@ -10,4 +10,7 @@
     <string name="type">type:</string>
     <string name="delete_menu_item">delete note</string>
     <string name="text_note">Text-note</string>
+    <string name="sign_in">sign in</string>
+    <string name="sing_out">sing out</string>
+    <string name="delete_all">Delete all</string>
 </resources>

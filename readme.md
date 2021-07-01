@@ -21,3 +21,8 @@
 <img src="printscreens/lesson9_1.png" width="32%">
 <img src="printscreens/lesson9_2.png" width="52%">
 
+## Lesson10: firestore, google auth
+### Preview
+<img src="printscreens/lesson10_1.png" width="66%">
+<img src="printscreens/lesson10_2.png" width="32%">
+

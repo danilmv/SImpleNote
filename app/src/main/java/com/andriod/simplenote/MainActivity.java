@@ -1,17 +1,25 @@
 package com.andriod.simplenote;
 
-import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.fragment.app.FragmentTransaction;
 
+import android.accounts.Account;
+import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.MenuItem;
 
+import com.andriod.simplenote.data.BaseDataManager;
 import com.andriod.simplenote.entity.Note;
 import com.andriod.simplenote.fragments.ListNotesFragment;
 import com.andriod.simplenote.fragments.NoteFragment;
 import com.andriod.simplenote.fragments.SettingsFragment;
+import com.google.android.gms.auth.api.signin.GoogleSignIn;
+import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
+import com.google.android.gms.auth.api.signin.GoogleSignInClient;
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
+import com.google.android.gms.common.api.ApiException;
+import com.google.android.gms.tasks.Task;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 public class MainActivity extends AppCompatActivity
@@ -23,9 +31,14 @@ public class MainActivity extends AppCompatActivity
     private static final String FRAGMENT_NOTE = "FRAGMENT_NOTE";
     private static final String FRAGMENT_SETTINGS = "FRAGMENT_SETTINGS";
     private static final String TAG = "@@@MainActivity@";
+    private static final int CODE_SIGN_IN = 1111;
 
     private boolean hasSecondContainer;
     private BottomNavigationView bottomNavigationView;
+
+    private GoogleSignInClient googleSignInClient;
+
+    private String userName;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -52,15 +65,17 @@ public class MainActivity extends AppCompatActivity
             }
             return true;
         });
-
-        showList(false);
-        setBottomView(R.id.menu_bottom_item_list);
     }
 
-    private ListNotesFragment showList() {
-        Log.d(TAG, "showList() called");
+    private void showList(boolean showOnlyFavorites) {
+        if (userName == null || userName.isEmpty()) {
+            signIn();
+            return;
+        }
 
-        ListNotesFragment fragment = (ListNotesFragment) getSupportFragmentManager().findFragmentByTag(FRAGMENT_LIST_NOTES);
+        Log.d(TAG, "showList() called with: showOnlyFavorites = [" + showOnlyFavorites + "]");
+        ListNotesFragment fragment = (ListNotesFragment) getSupportFragmentManager()
+                .findFragmentByTag(FRAGMENT_LIST_NOTES);
         if (fragment == null) {
             fragment = new ListNotesFragment();
         }
@@ -70,30 +85,27 @@ public class MainActivity extends AppCompatActivity
                 .replace(R.id.main_fragment_container, fragment, FRAGMENT_LIST_NOTES)
                 .commit();
 
-        return fragment;
-    }
-
-    private ListNotesFragment showList(boolean showOnlyFavorites) {
-        Log.d(TAG, "showList() called with: showOnlyFavorites = [" + showOnlyFavorites + "]");
-        ListNotesFragment fragment = showList();
         fragment.setMode(showOnlyFavorites);
-        return fragment;
+
+        setBottomView(showOnlyFavorites ? R.id.menu_bottom_item_favorites : R.id.menu_bottom_item_list);
     }
 
     private void showNote(Note note) {
-        FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
-        transaction.replace(
-                hasSecondContainer ? R.id.second_fragment_container : R.id.main_fragment_container,
-                NoteFragment.newInstance(note), FRAGMENT_NOTE);
-        transaction.commit();
+        getSupportFragmentManager()
+                .beginTransaction()
+                .replace(
+                        hasSecondContainer ? R.id.second_fragment_container : R.id.main_fragment_container,
+                        NoteFragment.newInstance(note), FRAGMENT_NOTE)
+                .commit();
     }
 
     private void showSettings() {
-        FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
-        transaction.replace(
-                hasSecondContainer ? R.id.second_fragment_container : R.id.main_fragment_container,
-                new SettingsFragment(), FRAGMENT_SETTINGS);
-        transaction.commit();
+        getSupportFragmentManager()
+                .beginTransaction()
+                .replace(
+                        hasSecondContainer ? R.id.second_fragment_container : R.id.main_fragment_container,
+                        new SettingsFragment(), FRAGMENT_SETTINGS)
+                .commit();
     }
 
     @Override
@@ -103,13 +115,18 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     public void noteSaved(Note note) {
-        showList().addNote(note);
+        getDataManager().updateData(note);
+        showList(false);
+    }
+
+    private BaseDataManager getDataManager() {
+        return ((NoteApplication) getApplication()).getDataManager();
     }
 
     @Override
     public void deleteAll() {
-        showList(false).deleteAll();
-        setBottomView(R.id.menu_bottom_item_list);
+        getDataManager().deleteAll();
+        showList(false);
     }
 
     private void setBottomView(int bottomItemId) {
@@ -121,22 +138,82 @@ public class MainActivity extends AppCompatActivity
     }
 
     @Override
-    protected void onRestoreInstanceState(@NonNull Bundle savedInstanceState) {
-        Log.d(TAG, "onRestoreInstanceState() called with: savedInstanceState = [" + savedInstanceState + "]");
-        super.onRestoreInstanceState(savedInstanceState);
-    }
-
-    @Override
-    protected void onRestart() {
-        Log.d(TAG, "onRestart() called");
-        super.onRestart();
-    }
-
-    @Override
     protected void onResume() {
         Log.d(TAG, "onResume() called");
         super.onResume();
 
         setBottomView(R.id.menu_bottom_item_list);
+    }
+
+    @Override
+    protected void onStart() {
+        Log.d(TAG, "onStart() called");
+        super.onStart();
+
+        GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+                .requestEmail()
+                .build();
+
+        googleSignInClient = GoogleSignIn.getClient(this, gso);
+        Account account = gso.getAccount();
+        if (account == null) {
+            GoogleSignInAccount googleAccount = GoogleSignIn.getLastSignedInAccount(this);
+            if (googleAccount != null) {
+                account = googleAccount.getAccount();
+            }
+        }
+
+        if (account != null) {
+            userName = account.name;
+
+            getDataManager().setUser(userName);
+
+            Log.d(TAG, String.format("AUTHORIZED as [%s]", userName));
+        }
+
+        showList(false);
+    }
+
+    @Override
+    public void signIn() {
+        startActivityForResult(googleSignInClient.getSignInIntent(), CODE_SIGN_IN);
+    }
+
+    @Override
+    public void signOut() {
+        Log.d(TAG, String.format("signOut() called: [%s sign out]", userName));
+        userName = null;
+        googleSignInClient.signOut()
+                .addOnCompleteListener(task -> showSettings());
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        if (requestCode == CODE_SIGN_IN && resultCode == RESULT_OK) {
+            Task<GoogleSignInAccount> task = GoogleSignIn.getSignedInAccountFromIntent(data);
+            try {
+                GoogleSignInAccount account = task.getResult(ApiException.class);
+                if (account != null && account.getAccount() != null) {
+                    userName = account.getAccount().name;
+
+                    Log.d(TAG, String.format("AUTHORIZED as [%s]", userName));
+                }
+            } catch (ApiException e) {
+                e.printStackTrace();
+            }
+
+            if (userName != null && !userName.isEmpty()) {
+                getDataManager().setUser(userName);
+
+                showList(false);
+            }
+        }
+    }
+
+    @Override
+    public String getUserName() {
+        return userName;
     }
 }
