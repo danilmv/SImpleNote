@@ -2,17 +2,20 @@ package com.andriod.simplenote;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.SearchView;
 
 import android.accounts.Account;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.Menu;
 import android.view.MenuItem;
 
 import com.andriod.simplenote.data.BaseDataManager;
 import com.andriod.simplenote.entity.Note;
 import com.andriod.simplenote.fragments.ListNotesFragment;
 import com.andriod.simplenote.fragments.NoteFragment;
+import com.andriod.simplenote.fragments.SearchResultsDialogFragment;
 import com.andriod.simplenote.fragments.SettingsFragment;
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
@@ -25,11 +28,13 @@ import com.google.android.material.bottomnavigation.BottomNavigationView;
 public class MainActivity extends AppCompatActivity
         implements ListNotesFragment.Controller,
         NoteFragment.Controller,
-        SettingsFragment.Controller {
+        SettingsFragment.Controller,
+        SearchResultsDialogFragment.Controller {
 
     private static final String FRAGMENT_LIST_NOTES = "FRAGMENT_LIST_NOTES";
     private static final String FRAGMENT_NOTE = "FRAGMENT_NOTE";
     private static final String FRAGMENT_SETTINGS = "FRAGMENT_SETTINGS";
+    private static final String FRAGMENT_SEARCH_RESULTS = "FRAGMENT_SEARCH_RESULTS";
     private static final String TAG = "@@@MainActivity@";
     private static final int CODE_SIGN_IN = 1111;
 
@@ -39,6 +44,8 @@ public class MainActivity extends AppCompatActivity
     private GoogleSignInClient googleSignInClient;
 
     private String userName;
+
+    private SearchResultsDialogFragment searchResultsDialogFragment;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -215,5 +222,44 @@ public class MainActivity extends AppCompatActivity
     @Override
     public String getUserName() {
         return userName;
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.menu_main, menu);
+
+        SearchView searchView = (SearchView) menu.findItem(R.id.menu_main_item_search).getActionView();
+        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+            @Override
+            public boolean onQueryTextSubmit(String query) {
+                showQueryResults(query);
+                return true;
+            }
+
+            @Override
+            public boolean onQueryTextChange(String newText) {
+                return true;
+            }
+        });
+
+        return true;
+    }
+
+    private void showQueryResults(String newText) {
+        if (newText == null || newText.isEmpty()) return;
+
+        if (searchResultsDialogFragment == null) {
+            searchResultsDialogFragment = new SearchResultsDialogFragment();
+        }
+
+        searchResultsDialogFragment.show(getSupportFragmentManager(), FRAGMENT_SEARCH_RESULTS);
+        searchResultsDialogFragment.setSearchQuery(newText);
+
+    }
+
+    @Override
+    public void showSearchNote(Note note) {
+        searchResultsDialogFragment.dismiss();
+        changeNote(note);
     }
 }

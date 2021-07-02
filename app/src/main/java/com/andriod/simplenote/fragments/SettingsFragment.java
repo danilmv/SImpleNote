@@ -1,6 +1,8 @@
 package com.andriod.simplenote.fragments;
 
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -34,9 +36,16 @@ public class SettingsFragment extends Fragment {
 
         Button buttonDelete = view.findViewById(R.id.button_delete_all);
         buttonDelete.setOnClickListener(v -> {
-            if (getController() != null) {
-                getController().deleteAll();
-            }
+            new AlertDialog.Builder(getContext())
+                    .setTitle(R.string.delete_dialog_header)
+                    .setMessage(R.string.delete_dialog_message)
+                    .setPositiveButton(R.string.Yes, (dialog, which) -> {
+                        if (getController() != null) {
+                            getController().deleteAll();
+                        }
+                    })
+                    .setNegativeButton(R.string.Cancel, null)
+                    .show();
         });
         buttonDelete.setEnabled(userName != null && !userName.isEmpty());
 
