@@ -70,7 +70,7 @@ public class SearchResultsAdapter extends RecyclerView.Adapter<SearchResultsAdap
         public void bind(Note note) {
             this.note = note;
             textViewHeader.setText(note.getHeader());
-            textViewContent.setText(note.getContent());
+            textViewContent.setText(note.getShortContent());
         }
     }
 }

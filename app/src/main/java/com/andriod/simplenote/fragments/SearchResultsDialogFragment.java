@@ -49,6 +49,7 @@ public class SearchResultsDialogFragment extends BottomSheetDialogFragment {
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
 
         adapter = new SearchResultsAdapter();
+        SearchResultsAdapter.OnItemClickListener l = z->{};
         adapter.setListener(note -> {
             if (getController() != null) {
                 getController().showSearchNote(note);
